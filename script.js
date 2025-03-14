@@ -1,5 +1,41 @@
-console.log("Скрипт подключен и работает!");
+// let variable = 1;
+//
+// variable = "a"
+//
+// variable = false
+//
+// variable = null
+//
+// console.log(variable )
 
-document.querySelector("h1").addEventListener("click", function() {
-    alert("Вы нажали на заголовок!");
-});
+// var variable = "aaa"
+//
+// console.log(variable);
+
+// console.log(variable);
+// let variable = "aaa"
+
+// console.log(myFyrstFunc())
+//
+// function myFyrstFunc(){
+//     console.log("Hello World!");
+// }
+// myFyrstFunc();
+
+const obj = {
+    name: "aleh",
+    age: 32,
+    maried: true,
+    sayHello() {
+        console.log("Hello, My Names is ${this.name}!");
+    }
+}
+
+// console.log(obj.name);
+obj.sayHello();
+
+const func = () =>  {
+     console.log(text);
+}
+
+func('some text')
