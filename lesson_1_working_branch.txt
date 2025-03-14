@@ -1,2 +1,3 @@
-Это файл lesson_1_working_branch.txt.
-Он создан для демонстрации работы с ветками в Git.
+1. Git
+2. GitHub
+3. WebStorm
