@@ -1,1 +1,1 @@
-console.log('Lesson 8 script loaded');
+document.body.style
