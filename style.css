@@ -1,0 +1,104 @@
+class BankAccount {
+constructor(initialBalance) {
+    this.balance = initialBalance;
+    this.transactionHistory = [];
+    this.interestInterval = null;
+}
+
+deposit(amount) {
+    try {
+        if (amount <= 0) {
+        throw new Error("Сумма пополнения должна быть положительной.");
+    }
+        this.balance += amount;
+        this.transactionHistory.push({ type: 'deposit', amount, date: new Date() });
+        console.log(`Пополнение на ${amount}. Новый баланс: ${this.balance}`);
+    } catch (error) {
+    console.error(error.message);
+}
+}
+
+withdraw(amount) {
+    try {
+        if (amount <= 0) {
+        throw new Error("Сумма снятия должна быть положительной.");
+    }
+        if (amount > this.balance) {
+        throw new Error("Недостаточно средств для снятия.");
+    }
+        this.balance -= amount;
+        this.transactionHistory.push({ type: 'withdraw', amount, date: new Date() });
+        console.log(`Снятие ${amount}. Новый баланс: ${this.balance}`);
+    } catch (error) {
+    console.error(error.message);
+}
+}
+
+getBalance() {
+    return this.balance;
+}
+
+startInterest(interval, rate) {
+    if (this.interestInterval) {
+    console.log("Проценты уже начисляются.");
+    return;
+}
+    this.interestInterval = setInterval(() => {
+    const interest = this.balance * rate;
+    this.deposit(interest);
+    console.log(`Начислены проценты: ${interest}. Новый баланс: ${this.balance}`);
+}, interval);
+}
+
+stopInterest() {
+    if (this.interestInterval) {
+clearInterval(this.interestInterval);
+    this.interestInterval = null;
+    console.log("Начисление процентов остановлено.");
+} else {
+      console.log("Проценты не начисляются.");
+  }
+}
+
+scheduleTransaction(type, amount, delay) {
+setTimeout(() => {
+    if (type === 'deposit') {
+    this.deposit(amount);
+} else if (type === 'withdraw') {
+    this.withdraw(amount);
+} else {
+      console.error("Неверный тип транзакции.");
+  }
+}, delay);
+}
+
+getTransactionHistory() {
+    return this.transactionHistory;
+}
+
+getBalanceOnDate(date) {
+    let balanceOnDate = this.transactionHistory
+    .filter(transaction => new Date(transaction.date) <= date)
+    .reduce((balance, transaction) => {
+    if (transaction.type === 'deposit') {
+    return balance + transaction.amount;
+} else if (transaction.type === 'withdraw') {
+    return balance - transaction.amount;
+}
+    return balance;
+}, this.transactionHistory[0]?.amount || 0);
+
+    return balanceOnDate;
+}
+}
+
+// Пример использования
+   const account = new BankAccount(1000);
+account.deposit(200);
+account.withdraw(50);
+account.startInterest(10000, 0.05); // Начисление 5% каждые 10 секунд
+                                                               account.scheduleTransaction('deposit', 300, 5000); // Пополнение через 5 секунд
+                                                                                                                                        account.scheduleTransaction('withdraw', 100, 7000); // Снятие через 7 секунд
+
+                                                                                                                                                                                                              console.log("История транзакций:", account.getTransactionHistory());
+console.log("Баланс на текущую дату:", account.getBalanceOnDate(new Date()));
