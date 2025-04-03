@@ -1,0 +1,8 @@
+document.addEventListener('click', function(e) {
+    if(e.target.tagName === 'BUTTON') {
+        const listItem = e.target.closest('li');
+        if(listItem) {
+            listItem.remove();
+        }
+    }
+});
