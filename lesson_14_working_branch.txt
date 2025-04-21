@@ -1,0 +1,3 @@
+https://home.openweathermap.org/
+
+https://openweathermap.org/api
