@@ -80,9 +80,10 @@ const unBlockUI = (elem) => {
     elem.classList.remove('loader');
 }
 
-const getWeather = async (form) => {
+const startApp = async (form) => {
     const props = getWeatherProps(form);
-    const url = getRequestUrl(props, apiTypes.weather);
+    const apiType = form.elements.apiType.value
+    const url = getRequestUrl(props, apiType);
     let data;
 
     blockUI(form)
@@ -93,8 +94,9 @@ const getWeather = async (form) => {
         console.error(e);
         data = [];
     }
-    unBlockUI(form)
-    return data;
+    unBlockUI(form);
+
+    apiType === apiTypes.weather ? renderWeather(data) : renderForecast(data);
 }
 
 const renderWeather = (weather) => {
@@ -106,11 +108,11 @@ const renderWeather = (weather) => {
         month: 'long',
         day: 'numeric',
     })
-    const sunrise = new Date(weather.sys.sunrise * 1000).toLocaleTimeString(currentLang, {
+    const sunrise = new Date((weather.sys.sunrise + weather.timezone) * 1000).toLocaleTimeString(currentLang, {
         hour: 'numeric',
         minute: 'numeric',
     })
-    const sunset = new Date(weather.sys.sunset * 1000).toLocaleTimeString(currentLang, {
+    const sunset = new Date((weather.sys.sunset + weather.timezone) * 1000).toLocaleTimeString(currentLang, {
         hour: 'numeric',
         minute: 'numeric',
     })
@@ -126,6 +128,74 @@ const renderWeather = (weather) => {
     weatherContainer.append(template);
 }
 
+const buildForecastGroup = (data) => {
+    const containerDiv = document.createElement('div');
+    const divDay = document.createElement('div');
+    const divNight = document.createElement('div');
+
+    containerDiv.append(divDay, divNight);
+    containerDiv.classList.add('p-3', 'border', 'm-b-3')
+
+    if (data.d) {
+        divDay.append(...data.d.map(buildForecastItem));
+    }
+    if (data.n) {
+        divNight.append(...data.n.map(buildForecastItem))
+    }
+
+    return containerDiv
+}
+
+const buildForecastItem = (data) => {
+    const currentLang = weatherForm.elements.lang.value;
+    const template = document.querySelector('#templateCard').content.cloneNode(true);
+    const time = new Date(data.dt * 1000).toLocaleDateString(currentLang, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    })
+
+    template.querySelector('img').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`
+    template.querySelector("#time").innerText = time
+    template.querySelector('#desc').innerText = data.weather[0].description;
+    template.querySelector('#temp').innerText = `${DICTIONARY[currentLang].temp} ${data.main.temp}`;
+    template.querySelector('#feelsLike').innerText = `${DICTIONARY[currentLang].feelsLike} ${data.main.feels_like}`;
+
+    return template;
+}
+
+const transformForecast = (items) => {
+    return items.reduce((acc, item) => {
+        const day = item.dt_txt.split(' ')[0]
+        const partOfDay = item.sys.pod;
+        if (acc[day]) {
+            if (acc[day][partOfDay]) {
+                acc[day][partOfDay].push(item)
+            } else {
+                acc[day] = {
+                    ...acc[day],
+                    [partOfDay]: [item],
+                }
+            }
+        } else {
+            acc[day] = {
+                [partOfDay]: [item],
+            }
+        }
+        return acc;
+    }, {})
+}
+
+const renderForecast = (data) => {
+    const weatherContainer = document.querySelector('#weatherContainer');
+    const transformedList = transformForecast(data.list);
+    const items = Object.values(transformedList).map(buildForecastGroup);
+
+    weatherContainer.innerHTML = '';
+    weatherContainer.append(...items);
+
+}
+
 weatherForm.addEventListener("change", async (event) => {
     if (event.target.name === 'q') {
         const form = event.currentTarget
@@ -136,8 +206,7 @@ weatherForm.addEventListener("change", async (event) => {
 
 weatherForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const weather = await getWeather(event.target);
-    renderWeather(weather);
+    startApp(event.target);
 })
 
 weatherForm.elements.q.dispatchEvent(new Event('change', {bubbles: true}));
